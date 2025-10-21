@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:flutter_map/flutter_map.dart';
 import '../models/institution.dart';
 
 class DetailsScreen extends StatelessWidget {
@@ -190,6 +192,11 @@ class DetailsScreen extends StatelessWidget {
                       _buildInfoRow('Longitud', institution.longitud),
                     ],
                   ),
+
+                  const SizedBox(height: 16),
+
+                  // UBICACIÓN EN EL MAPA
+                  _buildLocationSection(context, institution),
                 ],
               ),
             ),
@@ -304,6 +311,219 @@ class DetailsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildLocationSection(BuildContext context, Institution institution) {
+    // Parsear coordenadas
+    double? lat = double.tryParse(institution.latitud);
+    double? lon = double.tryParse(institution.longitud);
+    
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF94DDBC).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    color: Color(0xFF2D5A3D),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'UBICACIÓN EN EL MAPA',
+                    style: GoogleFonts.interTight(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2D5A3D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Información de coordenadas
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[50],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.grey[200]!,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.gps_fixed,
+                    color: Colors.blue[600],
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Coordenadas: ${institution.latitud}, ${institution.longitud}',
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Mapa
+            if (lat != null && lon != null)
+              Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: InstitutionMapWidget(
+                    latitude: lat,
+                    longitude: lon,
+                    institutionName: institution.nombreIE,
+                    address: institution.direccion,
+                  ),
+                ),
+              )
+            else
+              Container(
+                height: 300,
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.grey[300]!,
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.location_off,
+                        size: 48,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Coordenadas no disponibles',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class InstitutionMapWidget extends StatelessWidget {
+  final double latitude;
+  final double longitude;
+  final String institutionName;
+  final String address;
+
+  const InstitutionMapWidget({
+    super.key,
+    required this.latitude,
+    required this.longitude,
+    required this.institutionName,
+    required this.address,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FlutterMap(
+      options: MapOptions(
+        initialCenter: LatLng(latitude, longitude),
+        initialZoom: 15.0,
+        minZoom: 10.0,
+        maxZoom: 18.0,
+      ),
+      children: [
+        // Capa base - Usando OpenStreetMap con configuración para emuladores
+        TileLayer(
+          urlTemplate: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          subdomains: const ['a', 'b', 'c'],
+          userAgentPackageName: 'com.example.app_movil_servicios_educativos',
+          additionalOptions: const {
+            'attribution': '© OpenStreetMap contributors',
+          },
+        ),
+        
+        // Marcador de la institución
+        MarkerLayer(
+          markers: [
+            Marker(
+              point: LatLng(latitude, longitude),
+              width: 50,
+              height: 50,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
+                    color: Colors.white,
+                    width: 3,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.school,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
