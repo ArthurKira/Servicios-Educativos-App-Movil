@@ -32,7 +32,7 @@ class LiquidNavBar extends StatelessWidget {
                 BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
                 BottomNavigationBarItem(icon: Icon(Icons.business), label: 'Serv. Educativos'),
                 BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Mapa'),
-                BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Ajustes'),
+                BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Buscar'),
               ],
             ),
           ),

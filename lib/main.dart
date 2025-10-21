@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'screens/landing_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/servicios_educativos_screen.dart';
 import 'screens/maps_screen.dart';
-import 'screens/settings_screen.dart';
+import 'screens/search_screen.dart';
 import 'widgets/liquid_navbar.dart';
 import 'screens/details_screen.dart';
 
@@ -19,7 +20,7 @@ class EduPeruApp extends StatelessWidget {
       theme: ThemeData.dark().copyWith(
         scaffoldBackgroundColor: Colors.black,
       ),
-      home: const RootScreen(),
+      home: const LandingScreen(),
       routes: {
         '/details': (_) => const DetailsScreen(),
       },
@@ -41,7 +42,7 @@ class _RootScreenState extends State<RootScreen> {
     HomeScreen(),
     ServiciosEducativosScreen(),
     MapsScreen(),
-    SettingsScreen(),
+    SearchScreen(),
   ];
 
   void _onTabChanged(int index) {

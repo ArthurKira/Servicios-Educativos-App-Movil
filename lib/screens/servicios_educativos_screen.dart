@@ -43,8 +43,8 @@ class ServiciosEducativosScreen extends StatelessWidget {
         departamento: 'Junín',
         areaGeografica: 'Urbana',
         provincia: 'Huancayo',
-        latitud: '-12.1573',
         distrito: 'Chupuro',
+        latitud: '-12.1573',
         longitud: '-75.2444',
       ),
       Institution(
@@ -82,8 +82,8 @@ class ServiciosEducativosScreen extends StatelessWidget {
         departamento: 'Lima',
         areaGeografica: 'Urbana',
         provincia: 'Lima',
-        latitud: '-12.0464',
         distrito: 'Lima',
+        latitud: '-12.0464',
         longitud: '-77.0428',
       ),
     ];
