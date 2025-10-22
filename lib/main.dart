@@ -4,6 +4,7 @@ import 'screens/home_screen.dart';
 import 'screens/servicios_educativos_screen.dart';
 import 'screens/maps_screen.dart';
 import 'screens/search_screen.dart';
+import 'screens/comparison_screm.dart';
 import 'widgets/liquid_navbar.dart';
 import 'screens/details_screen.dart';
 
@@ -18,11 +19,12 @@ class EduPeruApp extends StatelessWidget {
       title: 'EduPerú App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 0, 0, 0),
       ),
       home: const LandingScreen(),
       routes: {
         '/details': (_) => const DetailsScreen(),
+        '/comparison': (_) => const ComparisonScreen(),
       },
     );
   }

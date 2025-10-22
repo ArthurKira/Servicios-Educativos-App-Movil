@@ -37,6 +37,47 @@ class Institution {
   final String distrito;
   final String longitud;
 
+  // SERVICIOS DISPONIBLES
+  final bool servicioInternet;
+  final bool servicioAgua;
+  final bool servicioLuz;
+  final bool servicioDesague;
+  final bool servicioTelefono;
+  final bool servicioGas;
+  final bool biblioteca;
+  final bool laboratorio;
+  final bool canchaDeportiva;
+  final bool comedor;
+  final bool serviciosHigienicos;
+  final String otrosServicios;
+
+  // ESTADÍSTICAS DE MATRÍCULA
+  final int totalMatriculados;
+  final int matriculadosInicial;
+  final int matriculadosPrimaria;
+  final int matriculadosSecundaria;
+  final int matriculadosMasculino;
+  final int matriculadosFemenino;
+
+  // RECURSOS HUMANOS
+  final int totalDocentes;
+  final int docentesInicial;
+  final int docentesPrimaria;
+  final int docentesSecundaria;
+  final int personalAdministrativo;
+  final int personalServicio;
+
+  // INFRAESTRUCTURA
+  final int numeroAulas;
+  final int numeroLaboratorios;
+  final int capacidadBiblioteca;
+  final double areaTotalLocal;
+  final int numeroSecciones;
+
+  // INDICADORES DE CALIDAD
+  final int anosFuncionamiento;
+  final double ratioDocenteEstudiante;
+
   Institution({
     // DATOS DE LA IE
     required this.nombreIE,
@@ -75,6 +116,47 @@ class Institution {
     required this.latitud,
     required this.distrito,
     required this.longitud,
+    
+    // SERVICIOS DISPONIBLES
+    required this.servicioInternet,
+    required this.servicioAgua,
+    required this.servicioLuz,
+    required this.servicioDesague,
+    required this.servicioTelefono,
+    required this.servicioGas,
+    required this.biblioteca,
+    required this.laboratorio,
+    required this.canchaDeportiva,
+    required this.comedor,
+    required this.serviciosHigienicos,
+    required this.otrosServicios,
+    
+    // ESTADÍSTICAS DE MATRÍCULA
+    required this.totalMatriculados,
+    required this.matriculadosInicial,
+    required this.matriculadosPrimaria,
+    required this.matriculadosSecundaria,
+    required this.matriculadosMasculino,
+    required this.matriculadosFemenino,
+    
+    // RECURSOS HUMANOS
+    required this.totalDocentes,
+    required this.docentesInicial,
+    required this.docentesPrimaria,
+    required this.docentesSecundaria,
+    required this.personalAdministrativo,
+    required this.personalServicio,
+    
+    // INFRAESTRUCTURA
+    required this.numeroAulas,
+    required this.numeroLaboratorios,
+    required this.capacidadBiblioteca,
+    required this.areaTotalLocal,
+    required this.numeroSecciones,
+    
+    // INDICADORES DE CALIDAD
+    required this.anosFuncionamiento,
+    required this.ratioDocenteEstudiante,
   });
 
   // Getters para compatibilidad con el código existente

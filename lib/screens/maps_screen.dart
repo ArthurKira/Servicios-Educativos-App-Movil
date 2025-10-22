@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:geolocator/geolocator.dart';
 
 class MapsScreen extends StatefulWidget {
   const MapsScreen({super.key});
@@ -11,33 +12,29 @@ class MapsScreen extends StatefulWidget {
 
 class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
   late MapController _mapController;
-  
+
   // Configuración del mapa
   final LatLng _defaultPosition = const LatLng(-12.0464, -77.0428);
   final double _defaultZoom = 14.0;
-  
-  // Estado del mapa
-  bool _isAnimating = false;
-  
-  
-  
-  // Controladores de animación
+
+  // Estado
+  bool _showLayerOptions = false;
+  String _selectedBaseLayer = 'Mapa Callejero';
+
+  // Controladores
   late AnimationController _animationController;
   late AnimationController _layerAnimationController;
-  
-  // Configuración de capas base
+
+  // Capas base
   final Map<String, TileLayer> _baseLayers = {};
-  
-  String _selectedBaseLayer = 'Mapa Callejero';
-  bool _showLayerOptions = false;
-  
 
   @override
   void initState() {
     super.initState();
-    _initializeMap();
+    _mapController = MapController();
     _setupAnimationControllers();
     _setupBaseLayers();
+    _checkPermissions();
   }
 
   void _setupAnimationControllers() {
@@ -45,35 +42,65 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
       duration: const Duration(milliseconds: 2000),
       vsync: this,
     );
-    
+
     _layerAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
   }
 
-  void _initializeMap() {
-    _mapController = MapController();
-  }
-
   void _setupBaseLayers() {
-    // Solo capa de mapa callejero confiable
     _baseLayers['Mapa Callejero'] = TileLayer(
       urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
       userAgentPackageName: 'com.example.app_movil_servicios_educativos',
+      maxZoom: 18,
+      minZoom: 1,
+      tileBuilder: (context, tileWidget, tile) {
+        return tileWidget;
+      },
+      errorTileCallback: (tile, error, stackTrace) {
+        // Manejar errores de tiles silenciosamente
+        // No retornar nada, solo registrar el error
+        print('Error cargando tile: $error');
+      },
     );
+    // Si quieres agregar más capas base en el futuro, lo haces aquí 👆
+  }
+
+  Future<void> _checkPermissions() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      LocationPermission permission = await Geolocator.checkPermission();
+
+      if (!serviceEnabled) {
+        // Solo abrir configuración si el servicio no está habilitado
+        await Geolocator.openLocationSettings();
+        return;
+      }
+      
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          // El usuario denegó el permiso
+          return;
+        }
+      }
+      
+      if (permission == LocationPermission.deniedForever) {
+        // El usuario denegó permanentemente el permiso
+        return;
+      }
+    } catch (e) {
+      // Manejar errores de permisos silenciosamente
+      print('Error al verificar permisos de ubicación: $e');
+    }
   }
 
   @override
   void dispose() {
     _animationController.dispose();
     _layerAnimationController.dispose();
-    _cleanup();
     super.dispose();
-  }
-
-  void _cleanup() {
-    // Limpieza de recursos
   }
 
   @override
@@ -81,7 +108,7 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
     return Scaffold(
       body: Stack(
         children: [
-          // Mapa principal
+          // 🌍 Mapa
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
@@ -93,33 +120,30 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
               onLongPress: _onMapLongPress,
             ),
             children: [
-              // Capa base
-              _baseLayers[_selectedBaseLayer] ?? _baseLayers['Mapa Callejero']!,
-              
-              // Capas superpuestas dinámicas
+              _baseLayers[_selectedBaseLayer]!,
               ..._buildOverlayLayers(),
             ],
           ),
-          
-          // Controles de capas
+
+          // 🧭 Control de capas
           Positioned(
             top: 50,
             right: 16,
             child: _buildLayerControls(),
           ),
-          
-          // Controles de zoom
+
+          // 🔍 Control de zoom y ubicación
           Positioned(
             bottom: 100,
             right: 16,
             child: _buildZoomControls(),
           ),
-          
         ],
       ),
     );
   }
 
+  // 🔸 UI: Controles de capas
   Widget _buildLayerControls() {
     return Container(
       decoration: BoxDecoration(
@@ -127,7 +151,7 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -136,16 +160,15 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Botón principal (icono de capas)
-          Container(
-            padding: const EdgeInsets.all(8),
-            child: InkWell(
-              onTap: () {
-                setState(() {
-                  _showLayerOptions = !_showLayerOptions;
-                });
-              },
-              borderRadius: BorderRadius.circular(4),
+          InkWell(
+            onTap: () {
+              setState(() {
+                _showLayerOptions = !_showLayerOptions;
+              });
+            },
+            borderRadius: BorderRadius.circular(4),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -165,21 +188,21 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
               ),
             ),
           ),
-          
-          // Opciones de capas (expandibles)
-          if (_showLayerOptions) ...[
+          if (_showLayerOptions)
             Container(
               width: 200,
               padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: _baseLayers.keys.map((String layer) {
+                children: _baseLayers.keys.map((layer) {
                   final isSelected = _selectedBaseLayer == layer;
                   return Container(
                     width: double.infinity,
                     margin: const EdgeInsets.symmetric(vertical: 2),
                     child: Material(
-                      color: isSelected ? Colors.blue.withValues(alpha: 0.1) : Colors.transparent,
+                      color: isSelected
+                          ? Colors.blue.withOpacity(0.1)
+                          : Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
                       child: InkWell(
                         onTap: () {
@@ -187,17 +210,18 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
                             _selectedBaseLayer = layer;
                             _showLayerOptions = false;
                           });
-                          _changeBaseLayer(layer);
                         },
                         borderRadius: BorderRadius.circular(4),
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
                           child: Row(
                             children: [
                               Icon(
                                 _getLayerIcon(layer),
                                 size: 16,
-                                color: isSelected ? Colors.blue : Colors.grey[600],
+                                color:
+                                    isSelected ? Colors.blue : Colors.grey[600],
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -205,8 +229,12 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
                                   layer,
                                   style: TextStyle(
                                     fontSize: 12,
-                                    color: isSelected ? Colors.blue : Colors.grey[700],
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                    color: isSelected
+                                        ? Colors.blue
+                                        : Colors.grey[700],
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                                 ),
                               ),
@@ -225,7 +253,6 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
                 }).toList(),
               ),
             ),
-          ],
         ],
       ),
     );
@@ -233,18 +260,16 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
 
 
 
+  // 🔸 UI: Controles de Zoom y ubicación
   Widget _buildZoomControls() {
     return Container(
-      constraints: const BoxConstraints(
-        minWidth: 48,
-        minHeight: 144,
-      ),
+      constraints: const BoxConstraints(minWidth: 48, minHeight: 144),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
+            color: Colors.black.withOpacity(0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -256,26 +281,14 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _zoomIn,
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
           ),
           IconButton(
             icon: const Icon(Icons.remove),
             onPressed: _zoomOut,
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
           ),
           IconButton(
             icon: const Icon(Icons.my_location),
             onPressed: _centerOnUser,
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
           ),
         ],
       ),
@@ -287,24 +300,60 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
     return [];
   }
 
-  // Métodos de control del mapa
+  // 🌐 Métodos de control
   void _zoomIn() {
-    _mapController.move(_mapController.camera.center, _mapController.camera.zoom + 1);
+    _mapController.move(
+      _mapController.camera.center,
+      _mapController.camera.zoom + 1,
+    );
   }
 
   void _zoomOut() {
-    _mapController.move(_mapController.camera.center, _mapController.camera.zoom - 1);
+    _mapController.move(
+      _mapController.camera.center,
+      _mapController.camera.zoom - 1,
+    );
   }
 
-  void _centerOnUser() {
-    // Implementar centrado en ubicación del usuario
-    _mapController.move(_defaultPosition, _defaultZoom);
-  }
+  Future<void> _centerOnUser() async {
+    try {
+      // Verificar permisos antes de obtener ubicación
+      LocationPermission permission = await Geolocator.checkPermission();
+      
+      if (permission == LocationPermission.denied || 
+          permission == LocationPermission.deniedForever) {
+        // Mostrar mensaje al usuario
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Permisos de ubicación requeridos para esta función'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+        return;
+      }
 
-  void _changeBaseLayer(String layerName) {
-    setState(() {
-      _selectedBaseLayer = layerName;
-    });
+      final position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.medium,
+        timeLimit: const Duration(seconds: 10),
+      );
+      
+      final userLocation = LatLng(position.latitude, position.longitude);
+      _mapController.move(userLocation, _defaultZoom);
+      
+    } catch (e) {
+      // Si no hay permisos o no se obtiene ubicación
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No se pudo obtener la ubicación actual'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      _mapController.move(_defaultPosition, _defaultZoom);
+    }
   }
 
   IconData _getLayerIcon(String layerName) {
@@ -312,21 +361,17 @@ class _MapsScreenState extends State<MapsScreen> with TickerProviderStateMixin {
       case 'Mapa Callejero':
         return Icons.map;
       default:
-        return Icons.map;
+        return Icons.layers;
     }
   }
 
-  // Eventos del mapa
+  // Eventos
   void _onMapTap(TapPosition tapPosition, LatLng point) {
-    if (_isAnimating) return;
-    
-    // Funcionalidad de marcadores deshabilitada
-    // No se implementará en esta aplicación
+    // Tap en el mapa
   }
 
   void _onMapLongPress(TapPosition tapPosition, LatLng point) {
-    // Implementar funcionalidad de long press si es necesario
-    _onMapTap(tapPosition, point);
+    // Long press en el mapa
   }
 
 

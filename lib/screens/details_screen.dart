@@ -195,6 +195,16 @@ class DetailsScreen extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
+                  // SERVICIOS DISPONIBLES
+                  _buildServicesSection(context, institution),
+
+                  const SizedBox(height: 16),
+
+                  // ESTADÍSTICAS E INDICADORES
+                  _buildStatisticsSection(context, institution),
+
+                  const SizedBox(height: 16),
+
                   // UBICACIÓN EN EL MAPA
                   _buildLocationSection(context, institution),
                 ],
@@ -314,11 +324,7 @@ class DetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildLocationSection(BuildContext context, Institution institution) {
-    // Parsear coordenadas
-    double? lat = double.tryParse(institution.latitud);
-    double? lon = double.tryParse(institution.longitud);
-    
+  Widget _buildServicesSection(BuildContext context, Institution institution) {
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 16),
@@ -327,7 +333,7 @@ class DetailsScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withOpacity(0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -341,7 +347,419 @@ class DetailsScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF94DDBC).withValues(alpha: 0.1),
+                color: const Color(0xFF94DDBC).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.build,
+                    color: Color(0xFF2D5A3D),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'SERVICIOS DISPONIBLES',
+                    style: GoogleFonts.interTight(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2D5A3D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Servicios básicos
+            _buildServiceCategory(
+              'Servicios Básicos',
+              [
+                _buildServiceItem('Internet', institution.servicioInternet, Icons.wifi),
+                _buildServiceItem('Agua', institution.servicioAgua, Icons.water_drop),
+                _buildServiceItem('Luz Eléctrica', institution.servicioLuz, Icons.electrical_services),
+                _buildServiceItem('Desagüe', institution.servicioDesague, Icons.plumbing),
+                _buildServiceItem('Teléfono', institution.servicioTelefono, Icons.phone),
+                _buildServiceItem('Gas', institution.servicioGas, Icons.local_fire_department),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Servicios educativos
+            _buildServiceCategory(
+              'Servicios Educativos',
+              [
+                _buildServiceItem('Biblioteca', institution.biblioteca, Icons.library_books),
+                _buildServiceItem('Laboratorio', institution.laboratorio, Icons.science),
+                _buildServiceItem('Cancha Deportiva', institution.canchaDeportiva, Icons.sports_soccer),
+                _buildServiceItem('Comedor', institution.comedor, Icons.restaurant),
+                _buildServiceItem('Servicios Higiénicos', institution.serviciosHigienicos, Icons.wash),
+              ],
+            ),
+            
+            // Otros servicios
+            if (institution.otrosServicios.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey[200]!,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline,
+                          color: Colors.blue[600],
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Otros Servicios',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      institution.otrosServicios,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServiceCategory(String title, List<Widget> services) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: services,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServiceItem(String name, bool available, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: available 
+            ? const Color(0xFF94DDBC).withOpacity(0.2)
+            : Colors.grey[100],
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: available 
+              ? const Color(0xFF94DDBC)
+              : Colors.grey[300]!,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 16,
+            color: available 
+                ? const Color(0xFF2D5A3D)
+                : Colors.grey[500],
+          ),
+          const SizedBox(width: 6),
+          Text(
+            name,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: available 
+                  ? const Color(0xFF2D5A3D)
+                  : Colors.grey[600],
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            available ? Icons.check_circle : Icons.cancel,
+            size: 14,
+            color: available 
+                ? Colors.green[600]
+                : Colors.red[400],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatisticsSection(BuildContext context, Institution institution) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF94DDBC).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.analytics,
+                    color: Color(0xFF2D5A3D),
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'ESTADÍSTICAS E INDICADORES',
+                    style: GoogleFonts.interTight(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF2D5A3D),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // Estadísticas de matrícula
+            _buildStatCategory(
+              'Matrícula Estudiantil',
+              [
+                _buildStatCard('Total Matriculados', '${institution.totalMatriculados}', Icons.school, Colors.blue),
+                _buildStatCard('Inicial', '${institution.matriculadosInicial}', Icons.child_care, Colors.purple),
+                _buildStatCard('Primaria', '${institution.matriculadosPrimaria}', Icons.school, Colors.green),
+                _buildStatCard('Secundaria', '${institution.matriculadosSecundaria}', Icons.school, Colors.orange),
+                _buildStatCard('Masculino', '${institution.matriculadosMasculino}', Icons.male, Colors.blue),
+                _buildStatCard('Femenino', '${institution.matriculadosFemenino}', Icons.female, Colors.pink),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Recursos humanos
+            _buildStatCategory(
+              'Recursos Humanos',
+              [
+                _buildStatCard('Total Docentes', '${institution.totalDocentes}', Icons.person, Colors.indigo),
+                _buildStatCard('Doc. Inicial', '${institution.docentesInicial}', Icons.person, Colors.purple),
+                _buildStatCard('Doc. Primaria', '${institution.docentesPrimaria}', Icons.person, Colors.green),
+                _buildStatCard('Doc. Secundaria', '${institution.docentesSecundaria}', Icons.person, Colors.orange),
+                _buildStatCard('Personal Admin.', '${institution.personalAdministrativo}', Icons.admin_panel_settings, Colors.grey),
+                _buildStatCard('Personal Servicio', '${institution.personalServicio}', Icons.cleaning_services, Colors.brown),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Infraestructura
+            _buildStatCategory(
+              'Infraestructura',
+              [
+                _buildStatCard('Número de Aulas', '${institution.numeroAulas}', Icons.meeting_room, Colors.teal),
+                _buildStatCard('Laboratorios', '${institution.numeroLaboratorios}', Icons.science, Colors.cyan),
+                _buildStatCard('Cap. Biblioteca', '${institution.capacidadBiblioteca}', Icons.library_books, Colors.amber),
+                _buildStatCard('Área Total (m²)', '${institution.areaTotalLocal.toStringAsFixed(0)}', Icons.square_foot, Colors.deepOrange),
+                _buildStatCard('Secciones', '${institution.numeroSecciones}', Icons.group, Colors.lightBlue),
+              ],
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Indicadores de calidad
+            _buildStatCategory(
+              'Indicadores de Calidad',
+              [
+                _buildStatCard('Años Funcionamiento', '${institution.anosFuncionamiento}', Icons.calendar_today, Colors.red),
+                _buildStatCard('Ratio Doc/Estud', '${institution.ratioDocenteEstudiante.toStringAsFixed(1)}', Icons.trending_up, Colors.green),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatCategory(String title, List<Widget> stats) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            // Calcular el número de columnas basado en el ancho disponible
+            final cardWidth = 100.0; // Ancho mínimo de cada tarjeta
+            final spacing = 8.0;
+            final columns = ((constraints.maxWidth + spacing) / (cardWidth + spacing)).floor();
+            final actualColumns = columns > 0 ? columns : 1;
+            
+            return Column(
+              children: [
+                for (int i = 0; i < stats.length; i += actualColumns)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: i + actualColumns < stats.length ? 8 : 0),
+                    child: Row(
+                      children: [
+                        for (int j = 0; j < actualColumns; j++)
+                          Expanded(
+                            child: Padding(
+                              padding: EdgeInsets.only(
+                                right: j < actualColumns - 1 ? spacing : 0,
+                              ),
+                              child: i + j < stats.length ? stats[i + j] : const SizedBox(),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: color,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey[600],
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔧 Método para parsear y validar coordenadas
+  ({double latitude, double longitude})? _parseCoordinates(String latStr, String lonStr) {
+    final lat = double.tryParse(latStr);
+    final lon = double.tryParse(lonStr);
+    
+    // Validar que las coordenadas estén en rangos válidos
+    if (lat == null || lon == null) return null;
+    if (lat < -90 || lat > 90) return null;
+    if (lon < -180 || lon > 180) return null;
+    
+    return (latitude: lat, longitude: lon);
+  }
+
+  Widget _buildLocationSection(BuildContext context, Institution institution) {
+    // Parsear y validar coordenadas
+    final coordinates = _parseCoordinates(institution.latitud, institution.longitud);
+    
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF94DDBC).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Row(
@@ -398,7 +816,7 @@ class DetailsScreen extends StatelessWidget {
             const SizedBox(height: 16),
             
             // Mapa
-            if (lat != null && lon != null)
+            if (coordinates != null)
               Container(
                 height: 300,
                 decoration: BoxDecoration(
@@ -411,8 +829,8 @@ class DetailsScreen extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: InstitutionMapWidget(
-                    latitude: lat,
-                    longitude: lon,
+                    latitude: coordinates.latitude,
+                    longitude: coordinates.longitude,
                     institutionName: institution.nombreIE,
                     address: institution.direccion,
                   ),
@@ -473,57 +891,62 @@ class InstitutionMapWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final institutionPoint = LatLng(latitude, longitude);
+    
     return FlutterMap(
       options: MapOptions(
-        initialCenter: LatLng(latitude, longitude),
+        initialCenter: institutionPoint,
         initialZoom: 15.0,
         minZoom: 10.0,
         maxZoom: 18.0,
+        interactionOptions: const InteractionOptions(
+          flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+        ),
       ),
       children: [
-        // Capa base - Usando OpenStreetMap con configuración para emuladores
+        // 🗺️ Capa base - OpenStreetMap seguro
         TileLayer(
-          urlTemplate: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          subdomains: const ['a', 'b', 'c'],
+          urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           userAgentPackageName: 'com.example.app_movil_servicios_educativos',
-          additionalOptions: const {
-            'attribution': '© OpenStreetMap contributors',
-          },
         ),
         
-        // Marcador de la institución
+        // 📍 Marcador de la institución
         MarkerLayer(
           markers: [
             Marker(
-              point: LatLng(latitude, longitude),
+              point: institutionPoint,
               width: 50,
               height: 50,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.red,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 3,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.school,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
+              child: _buildInstitutionMarker(),
             ),
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildInstitutionMarker() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D5A3D),
+        borderRadius: BorderRadius.circular(25),
+        border: Border.all(
+          color: Colors.white,
+          width: 3,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: const Icon(
+        Icons.school,
+        color: Colors.white,
+        size: 24,
+      ),
     );
   }
 }
